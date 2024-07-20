@@ -3,11 +3,11 @@ package org.test.caselab.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.test.caselab.dto.FileDto;
 import org.test.caselab.service.FileService;
+
+import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @RestController
@@ -21,6 +21,17 @@ public class FileController {
         return fileId != null
         ? new ResponseEntity<>(fileId,HttpStatus.CREATED)
                 :  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+    @GetMapping(value = "/files/{id}")
+    public ResponseEntity<FileDto> createFile(@PathVariable Long id){
+        try {
+            FileDto fileDto = fileService.findFileById(id);
+            return new ResponseEntity<>(fileDto,HttpStatus.OK);
+
+        }catch (NoSuchElementException e){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
     }
 
 

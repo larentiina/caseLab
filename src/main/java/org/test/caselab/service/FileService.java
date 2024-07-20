@@ -40,7 +40,8 @@ public class FileService {
         return FileDto.builder()
                 .title(fileEntity.getTitle())
                 .creationDate(fileEntity.getCreationDate().format(formatter))
-                .description(fileEntity.getDescription()).build();
+                .description(fileEntity.getDescription())
+                .data(Base64.getEncoder().encodeToString(fileEntity.getData())).build();
     }
 
 
