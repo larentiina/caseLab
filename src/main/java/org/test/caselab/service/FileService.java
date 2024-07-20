@@ -2,6 +2,8 @@ package org.test.caselab.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.test.caselab.dto.FileDto;
 import org.test.caselab.model.FileEntity;
 import org.test.caselab.repository.FileRepository;
@@ -9,6 +11,7 @@ import org.test.caselab.repository.FileRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.Optional;
 
 @Service
 public class FileService {
@@ -29,6 +32,15 @@ public class FileService {
                 .data(decodedBytes).build();
         FileEntity savedFileEntity = fileRepository.save(createdfileEntity);
         return  savedFileEntity.getId();
+    }
+
+    public FileDto findFileById(Long id){
+        FileEntity fileEntity = fileRepository.findById(id).orElseThrow();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        return FileDto.builder()
+                .title(fileEntity.getTitle())
+                .creationDate(fileEntity.getCreationDate().format(formatter))
+                .description(fileEntity.getDescription()).build();
     }
 
 
