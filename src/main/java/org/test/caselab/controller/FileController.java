@@ -5,24 +5,29 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.test.caselab.dto.FileDto;
+import org.test.caselab.exception.InvalidFileDataException;
 import org.test.caselab.service.FileService;
 
 import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/files")
 public class FileController {
 
     private final FileService fileService;
 
-    @PostMapping(value = "/files")
+    @PostMapping
     public ResponseEntity<?> createFile(@RequestBody FileDto fileDto){
-        Long fileId = fileService.save(fileDto);
-        return fileId != null
-        ? new ResponseEntity<>(fileId,HttpStatus.CREATED)
-                :  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        try {
+            Long fileId = fileService.save(fileDto);
+            return new ResponseEntity<>(fileId, HttpStatus.CREATED);
+
+        }catch (InvalidFileDataException e){
+            return  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
-    @GetMapping(value = "/files/{id}")
+    @GetMapping(value = "/{id}")
     public ResponseEntity<FileDto> createFile(@PathVariable Long id){
         try {
             FileDto fileDto = fileService.findFileById(id);

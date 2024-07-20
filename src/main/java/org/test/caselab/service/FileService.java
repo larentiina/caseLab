@@ -1,47 +1,58 @@
 package org.test.caselab.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.test.caselab.dto.FileDto;
+import org.test.caselab.exception.InvalidFileDataException;
 import org.test.caselab.model.FileEntity;
 import org.test.caselab.repository.FileRepository;
+
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 
+@RequiredArgsConstructor
 @Service
 public class FileService {
 
     private final FileRepository fileRepository;
-    @Autowired
-    public FileService(FileRepository fileRepository){
-        this.fileRepository = fileRepository;
-    }
+
 
     public Long save(FileDto fileDto){
-        byte[] decodedBytes = Base64.getDecoder().decode(fileDto.getData());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-        FileEntity createdfileEntity = FileEntity.builder()
-                .title(fileDto.getTitle())
-                .creationDate(LocalDateTime.parse(fileDto.getCreationDate(), formatter))
-                .description(fileDto.getDescription())
-                .data(decodedBytes).build();
-        FileEntity savedFileEntity = fileRepository.save(createdfileEntity);
-        return  savedFileEntity.getId();
+
+        try {
+            FileEntity createdfileEntity = FileEntity.builder()
+                    .title(fileDto.getTitle())
+                    .creationDate(LocalDateTime.parse(fileDto.getCreationDate(), getDateFormat()))
+                    .description(fileDto.getDescription())
+                    .data(decodeBase64(fileDto.getData())).build();
+            FileEntity savedFileEntity = fileRepository.save(createdfileEntity);
+            return savedFileEntity.getId();
+        }catch (IllegalArgumentException e){
+            throw new InvalidFileDataException("invalid base64 data",e);
+        }
     }
 
     public FileDto findFileById(Long id){
-        FileEntity fileEntity = fileRepository.findById(id).orElseThrow();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        FileEntity fileEntity = fileRepository.findById(id).orElseThrow(() -> new NoSuchElementException("File not found with id: " + id));
+
         return FileDto.builder()
                 .title(fileEntity.getTitle())
-                .creationDate(fileEntity.getCreationDate().format(formatter))
+                .creationDate(fileEntity.getCreationDate().format(getDateFormat()))
                 .description(fileEntity.getDescription())
-                .data(Base64.getEncoder().encodeToString(fileEntity.getData())).build();
+                .data(encodeBase64(fileEntity.getData())).build();
+    }
+
+    public DateTimeFormatter getDateFormat(){
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    }
+    public byte[] decodeBase64(String data){
+        return Base64.getDecoder().decode(data);
+    }
+    public String encodeBase64(byte[] data){
+        return Base64.getEncoder().encodeToString(data);
     }
 
 
