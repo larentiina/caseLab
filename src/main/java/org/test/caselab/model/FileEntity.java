@@ -1,18 +1,19 @@
 package org.test.caselab.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
-
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Data
 @Entity
-@Getter
-@Setter
 @Table(name = "files")
 public class FileEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
     @Column(columnDefinition = "TIMESTAMP")
